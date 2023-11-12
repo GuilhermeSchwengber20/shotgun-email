@@ -2,12 +2,31 @@
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 const express = require("express");
+const cors = require("cors");
+const allowedOrigins = ["http://127.0.0.1:5500/", "https://seu-front-end.com"];
+
+
 
 const app = express();
 dotenv.config();
 
-app.use(express.json());
+app.use(cors({
+    origin: function (origin, callback) {
+        if(!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Acesso nao permitido por CORS!"))
+        }
+    },
+    methods: "GET, HEAD, PUT, PATCH, POST, DELETE"
+}));
 
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Credentials", true);
+    next();
+})
+
+app.use(express.json());
 
 
 const transport = nodemailer.createTransport({
