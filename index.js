@@ -3,7 +3,7 @@ const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 const express = require("express");
 const cors = require("cors");
-const allowedOrigins = ["http://127.0.0.1:5500", "https://carlosbasseto.github.io/teste"];
+const allowedOrigins = ["http://127.0.0.1:5500", "https://carlosbasseto.github.io"];
 
 
 
@@ -23,9 +23,9 @@ app.use(cors({
 }));
 
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "https://carlosbasseto.github.io/teste/");
+    res.header("Access-Control-Allow-Origin", "https://carlosbasseto.github.io");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
     res.header("Access-Control-Allow-Credentials", true);
     next();
 })
@@ -62,6 +62,14 @@ app.post("/send-email", async (req, res) => {
         res.status(500).json({ error: `Erro ${err.message}`})        
     }
 });
+app.options("/send-email", (req, res) => {
+    res.header("Access-Control-Allow-Origin", "https://carlosbasseto.github.io");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Credentials", true);
+    res.sendStatus(200);
+});
+
 
 const PORT = process.env.PORT || 8081;
 
