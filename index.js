@@ -3,32 +3,14 @@ const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 const express = require("express");
 const cors = require("cors");
-const allowedOrigins = ["http://127.0.0.1:5500", "https://carlosbasseto.github.io"];
+const allowedOrigins = ["http://127.0.0.1:5500", "https://carlosbasseto.github.io", "http://localhost:3000"];
 
 
 
 const app = express();
 dotenv.config();
 
-app.use(cors({
-    origin: function (origin, callback) {
-        console.log(origin);
-        if(!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Acesso nao permitido por CORS!"))
-        }
-    },
-    methods: "GET, HEAD, PUT, PATCH, POST, DELETE"
-}));
-
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "https://carlosbasseto.github.io");
-    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.header("Access-Control-Allow-Credentials", true);
-    next();
-})
+app.use(cors());
 
 app.use(express.json());
 
@@ -45,10 +27,25 @@ const transport = nodemailer.createTransport({
 
 app.post("/send-email", async (req, res) => {
     try {
-        const { to, subject, html, text } = req.body;
+        const { from, to, subject, html, text } = req.body;
 
+        if(!from) {
+            return res.status(400).json({error: "from is a required field"})
+        }
+        if(!to) {
+            return res.status(400).json({error: "to is a required field"})
+        }
+        if(!subject) {
+            return res.status(400).json({error: "subject is a required field"})
+        }
+        if(!html) {
+            return res.status(400).json({error: "html is a required field"})
+        }
+        if(!text) {
+            return res.status(400).json({error: "text is a required field"})
+        }
         const info = await transport.sendMail({
-            from: "Vendas do Segundo Ano ce <vendas2ce@gmail.com>",
+            from,
             to,
             subject,
             html,
@@ -59,15 +56,8 @@ app.post("/send-email", async (req, res) => {
         res.status(200).json({ message: "Email enviado com sucesso!", info});
     } catch (err) {
         console.error(`Erro: ${err}`)
-        res.status(500).json({ error: `Erro ${err.message}`})        
+        return res.status(500).json({ error: `Erro ${err.message}`})        
     }
-});
-app.options("/send-email", (req, res) => {
-    res.header("Access-Control-Allow-Origin", "https://carlosbasseto.github.io");
-    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.header("Access-Control-Allow-Credentials", true);
-    res.sendStatus(200);
 });
 
 
